@@ -10,71 +10,79 @@ using System.Windows.Forms;
 
 namespace Hangman
 {
-    public partial class Form1 : Form
+    public partial class Hangman : Form
     {
-        public Form1()
+        int attemptsLeft = 10;
+        string word;
+        string[] words = { "test", "coding", "programmer", "csharp" };
+        char[] guessedLetters;
+
+        public Hangman()
         {
             InitializeComponent();
+            InitializeGame();
+        }
 
-            string[] words = { "tutorial", "coding", "programmer", "csharp" };
+        private void InitializeGame()
+        {
+            lblGuesses.Text = $"{attemptsLeft}";
 
             Random random = new Random();
-            string selectedWord = words[random.Next(words.Length)];
-            char[] wordToGuess = selectedWord.ToCharArray();
-            char[] guessedLetters = new char[wordToGuess.Length];
+            word = words[random.Next(words.Length)];
+            guessedLetters = new string('_', word.Length).ToCharArray();
 
-            for (int i = 0; i < guessedLetters.Length; i++)
+            lblWord.Text = new string(guessedLetters);
+        }
+
+        private void GuessLetter(char letter)
+        {
+            bool correctGuess = false;
+            for (int i = 0; i < word.Length; i++)
             {
-                guessedLetters[i] = '_';
-
-            }
-
-            //code of the Game
-
-            int attemptsLeft = 10;
-
-            while (attemptsLeft > 0)
-            {
-                Console.WriteLine("Current word: " + new string(guessedLetters));
-
-                Console.WriteLine("Guess a letter: ");
-                char guess = char.ToLower(Console.ReadKey().KeyChar);
-                Console.WriteLine();
-
-                bool correctGuess = false;
-
-                for (int i = 0; i < wordToGuess.Length; i++)
+                if (word[i] == letter)
                 {
-                    if (wordToGuess[i] == guess)
-                    {
-                        guessedLetters[i] = guess;
-                        correctGuess = true;
-                    }
-                }
-
-                if (!correctGuess)
-                {
-                    attemptsLeft--;
-                    Console.WriteLine("Incorrect! Attempts left: " + attemptsLeft);
-                }
-                if (new string(guessedLetters) == selectedWord)
-                {
-                    Console.WriteLine("Congratulations! You guessed the word: " + selectedWord);
-                    Console.ReadLine();
-                    break;
+                    guessedLetters[i] = letter;
+                    correctGuess = true;
                 }
             }
 
-            // Show the outcome of the game
-
-            if (attemptsLeft == 0)
+            if (!correctGuess)
             {
-                Console.WriteLine("Sorry, you have ran out of attempts.- The word was: " + selectedWord);
-                Console.ReadLine();
+                attemptsLeft--;
             }
 
-            Console.WriteLine("Thanks for playing Hangman!");
-            Console.ReadLine();
+            lblGuesses.Text = $"{attemptsLeft}";
+            lblWord.Text = new string(guessedLetters);
+
+            CheckGameOver();
+        }
+
+        private void CheckGameOver()
+        {
+            if (attemptsLeft <= 0)
+            {
+                MessageBox.Show("Game Over! The word was: " + word);
+                InitializeGame();
+            }
+            else if (!new string(guessedLetters).Contains('_'))
+            {
+                MessageBox.Show("Congratulations! You've guessed the word: " + word);
+                InitializeGame();
+            }
+        }
+
+        private void btnSubmit_Click(object sender, EventArgs e)
+        {
+            Button button = sender as Button;
+
+            if (button != null)
+            {
+                char guessedLetter = txtboxGuess.Text[0];
+                GuessLetter(guessedLetter);
+            } else
+            {
+                MessageBox.Show("Enter a character");
+            }
         }
     }
 }
